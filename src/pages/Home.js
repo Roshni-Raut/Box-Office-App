@@ -5,9 +5,11 @@ import {apiGet} from '../misc/config'
 const Home = () => {
     const [input,setInput]= useState('');
     const [results,setResults]=useState(null);
+    const [searchOption, setSearch]=useState('shows')
+    const isShowsSearch=searchOption==='shows';
 
     const onSearch=()=>{
-        apiGet(`/search/shows?q=${input}`)
+        apiGet(`/search/${searchOption}?q=${input}`)
         .then(result=>{
             setResults(result)
         })
@@ -24,18 +26,34 @@ const Home = () => {
             return <div> No result found </div>
         }
         if(results && results.length>0){
-            return <div>{results.map((item)=>
-                <div key={item.show.id}>{item.show.name}</div>
-            )}</div>
+            return results[0].show ?
+            results.map(item => (<div key={item.show.id}>{item.show.name}</div>)):
+            results.map(item => (<div key={item.person.id}>{item.person.name}</div>))
         }
         return null;
+    }
+    const onRadioChange=(ev)=>{
+        setSearch(ev.target.value)
     }
     return (
         <div>
             <MainPageLayout>
-                <input type="text" value={input} onChange={onInputChange} onKeyDown={onKeyDown}/>
+                <input type="text" 
+                placeholder="Search for something"
+                value={input} onChange={onInputChange} onKeyDown={onKeyDown}/>
+                <div>
+                    <label htmlFor="show-search">
+                        shows<input id="show-search" 
+                        checked={isShowsSearch}
+                        type="radio" value="shows" onChange={onRadioChange}/>
+                    </label>
+                    <label htmlFor="actor-search">
+                        actor<input id="actor-search" 
+                        checked={!isShowsSearch}
+                        type="radio" value="people" onChange={onRadioChange}/>
+                    </label>
+                </div>
                 <button type="button" onClick={onSearch}>Search</button>
-                {input}
                 {renderResults()}
             </MainPageLayout>
         </div>
